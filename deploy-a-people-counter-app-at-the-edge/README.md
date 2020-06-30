@@ -153,7 +153,7 @@ were:
 - **Size of the model**: compare the file size of .pb (Tensorflow) and .bin (IR).
 - **Inference time**: time to complete inference on the video.
 
-> Pre-conversion calculations are done in `pre_conversion_accuracy_inference_time.ipynb` notebook.
+> Pre-conversion calculations were done in `pre_conversion_accuracy_inference_time.ipynb` notebook.
 
 <table style="width:100%">
   <tr>
