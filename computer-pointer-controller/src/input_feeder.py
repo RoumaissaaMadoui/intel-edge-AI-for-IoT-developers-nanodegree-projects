@@ -1,11 +1,5 @@
 '''
 This class can be used to feed input from an image, webcam, or video to your model.
-Sample usage:
-    feed=InputFeeder(input_type='video', input_file='video.mp4')
-    feed.load_data()
-    for batch in feed.next_batch():
-        do_something(batch)
-    feed.close()
 '''
 import cv2
 from numpy import ndarray
@@ -28,6 +22,7 @@ class InputFeeder:
             self.cap=cv2.VideoCapture(0)
         else:
             self.cap=cv2.imread(self.input_file)
+        return self.cap
 
     def next_batch(self):
         '''
