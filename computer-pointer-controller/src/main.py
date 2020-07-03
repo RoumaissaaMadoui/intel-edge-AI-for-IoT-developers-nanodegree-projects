@@ -7,8 +7,7 @@ from argparse import ArgumentParser
 from input_feeder import InputFeeder
 
 from face_detection import Model_face_detection
-
-
+from head_pose_estimation import Model_head_pose_estimation
 
 def build_argparser():
     """
@@ -20,6 +19,9 @@ def build_argparser():
     parser.add_argument("-fd", "--fd_model", required=True, type=str,
                         help="Path to an xml of the Face Detection model.")
    
+    parser.add_argument("-hp", "--hp_model", required=False, type=str,
+                        help="Path to an xml file to the Head Pose Estimation model.")
+                        
     parser.add_argument("-i", "--input", required=True, type=str,
                         help="Path to image or video file")
     
@@ -69,9 +71,11 @@ def infer_on_stream(args):
     
     # Initialise the classes
     face_detection_network = Model_face_detection(args.fd_model, args.device)
-
+    head_pose_network = Model_head_pose_estimation(args.hp_model, args.device)
+    
     # Load the models 
     face_detection_network.load_model()
+    head_pose_network.load_model()
 
     # Handle the input stream
     input_type = handle_input_type(args.input)
@@ -93,7 +97,8 @@ def infer_on_stream(args):
         
         # Run inference on the models     
         out_frame, face, face_coords = face_detection_network.predict(frame, args.prob_threshold, args.display)
-        
+        out_frame,  head_pose_angles = head_pose_network.predict(out_frame, face, face_coords, args.display)
+                
         if key_pressed == 27:
             break
        
