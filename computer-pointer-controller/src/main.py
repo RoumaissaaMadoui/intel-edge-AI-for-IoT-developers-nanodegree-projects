@@ -8,6 +8,7 @@ from input_feeder import InputFeeder
 
 from face_detection import Model_face_detection
 from head_pose_estimation import Model_head_pose_estimation
+from facial_landmarks_detection import Model_facial_landmarks_detection
 
 def build_argparser():
     """
@@ -21,6 +22,9 @@ def build_argparser():
    
     parser.add_argument("-hp", "--hp_model", required=False, type=str,
                         help="Path to an xml file to the Head Pose Estimation model.")
+                        
+    parser.add_argument("-fl", "--fl_model", required=False, type=str,
+                        help="Path to an xml file to the Facial Landmarks Detection model.")
                         
     parser.add_argument("-i", "--input", required=True, type=str,
                         help="Path to image or video file")
@@ -72,10 +76,12 @@ def infer_on_stream(args):
     # Initialise the classes
     face_detection_network = Model_face_detection(args.fd_model, args.device)
     head_pose_network = Model_head_pose_estimation(args.hp_model, args.device)
+    facial_landmarks_network =  Model_facial_landmarks_detection(args.fl_model, args.device)
     
     # Load the models 
     face_detection_network.load_model()
     head_pose_network.load_model()
+    facial_landmarks_network.load_model()
 
     # Handle the input stream
     input_type = handle_input_type(args.input)
@@ -98,7 +104,8 @@ def infer_on_stream(args):
         # Run inference on the models     
         out_frame, face, face_coords = face_detection_network.predict(frame, args.prob_threshold, args.display)
         out_frame,  head_pose_angles = head_pose_network.predict(out_frame, face, face_coords, args.display)
-                
+        out_frame, left_eye, right_eye, eyes_center = facial_landmarks_network.predict(out_frame, face, face_coords, args.display)
+        
         if key_pressed == 27:
             break
        
