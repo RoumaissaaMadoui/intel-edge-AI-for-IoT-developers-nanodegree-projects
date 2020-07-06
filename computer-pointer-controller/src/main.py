@@ -10,6 +10,7 @@ from face_detection import Model_face_detection
 from head_pose_estimation import Model_head_pose_estimation
 from facial_landmarks_detection import Model_facial_landmarks_detection
 from gaze_estimation import Model_gaze_estimation
+from mouse_controller import MouseController
 
 def build_argparser():
     """
@@ -45,6 +46,13 @@ def build_argparser():
     parser.add_argument("-pt", "--prob_threshold", type=float, default=0.6,
                         help="Probability threshold for detections filtering"
                         "(0.6 by default)")
+    
+    parser.add_argument("-p", "--mouse_precision", required=False, default='high', type=str,
+                        help="Set the precision for mouse movement: high, low, medium.")
+                        
+    parser.add_argument("-sp", "--mouse_speed", required=False, default='fast', type=str,
+                        help="Set the speed for mouse movement: fast, slow, medium.")
+                        
     return parser
 
 def handle_input_type(input_stream):
@@ -83,6 +91,8 @@ def infer_on_stream(args):
     facial_landmarks_network =  Model_facial_landmarks_detection(args.fl_model, args.device)
     gaze_estimation_network = Model_gaze_estimation(args.ge_model, args.device)
     
+    MC = MouseController(args.mouse_precision, args.mouse_speed)
+    
     # Load the models 
     face_detection_network.load_model()
     head_pose_network.load_model()
@@ -112,6 +122,9 @@ def infer_on_stream(args):
         out_frame,  head_pose_angles = head_pose_network.predict(out_frame, face, face_coords, args.display)
         out_frame, left_eye, right_eye, eyes_center = facial_landmarks_network.predict(out_frame, face, face_coords, args.display)
         out_frame, gaze_vector = gaze_estimation_network.predict(out_frame, left_eye, right_eye, eyes_center, head_pose_angles, args.display)
+        
+        # Move the mouse
+        MC.move(gaze_vector[0], gaze_vector[1])
         
         if key_pressed == 27:
             break
