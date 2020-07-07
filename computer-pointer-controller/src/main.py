@@ -114,6 +114,12 @@ def infer_on_stream(args):
         
         # Run inference on the models     
         out_frame, face, face_coords = face_detection_network.predict(frame, args.prob_threshold, args.display)
+        
+        ## If no face detected move back to the top of the loop
+        if len(face_coords) == 0:
+            log.error("No face detected.")
+            continue
+            
         out_frame,  head_pose_angles = head_pose_network.predict(out_frame, face, face_coords, args.display)
         out_frame, left_eye, right_eye, eyes_center = facial_landmarks_network.predict(out_frame, face, face_coords, args.display)
         out_frame, gaze_vector = gaze_estimation_network.predict(out_frame, left_eye, right_eye, eyes_center, head_pose_angles, args.display)
