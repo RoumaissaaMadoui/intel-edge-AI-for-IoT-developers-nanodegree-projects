@@ -20,28 +20,26 @@ def build_argparser():
     """
     parser = ArgumentParser()
     parser.add_argument("-fd", "--fd_model", required=True, type=str,
-                        help="Path to an xml of the Face Detection model.")
+                        help="Path to an xml file of the Face Detection model.")
    
-    parser.add_argument("-hp", "--hp_model", required=False, type=str,
-                        help="Path to an xml file to the Head Pose Estimation model.")
+    parser.add_argument("-hp", "--hp_model", required=True, type=str,
+                        help="Path to an xml file of the Head Pose Estimation model.")
                         
-    parser.add_argument("-fl", "--fl_model", required=False, type=str,
-                        help="Path to an xml file to the Facial Landmarks Detection model.")
+    parser.add_argument("-fl", "--fl_model", required=True, type=str,
+                        help="Path to an xml file of the Facial Landmarks Detection model.")
                         
-    parser.add_argument("-ge", "--ge_model", required=False, type=str,
-                        help="Path to an xml file to the Gaze Estimation model.")
+    parser.add_argument("-ge", "--ge_model", required=True, type=str,
+                        help="Path to an xml file of the Gaze Estimation model.")
                        
     parser.add_argument("-i", "--input", required=True, type=str,
-                        help="Path to image or video file")
+                        help="CAM or path to image or video file.")
     
     parser.add_argument("-dis", "--display", required=False, default=True, type=str,
                         help="Flag to display the outputs of the intermediate models")
 
-    parser.add_argument("-d", "--device", type=str, default="CPU",
+    parser.add_argument("-d", "--device", required=False, default="CPU", type=str,
                         help="Specify the target device to infer on: "
-                             "CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
-                             "will look for a suitable plugin for device "
-                             "specified (CPU by default)")
+                             "CPU, GPU, FPGA or MYRIAD.")
     
     parser.add_argument("-pt", "--prob_threshold", type=float, default=0.6,
                         help="Probability threshold for detections filtering"
@@ -105,14 +103,11 @@ def infer_on_stream(args):
     # Initialise the InputFeeder class
     feed = InputFeeder(input_type=input_type, input_file=args.input)
     
-    # Get the video capture
-    cap = feed.load_data()
-
-    #Loop until stream is over 
-    while cap.isOpened():
-
-        # Read from the video capture 
-        flag, frame = cap.read()
+    # Load the video capture
+    feed.load_data()
+    
+    # Read from the video capture 
+    for flag, frame in feed.next_batch():
         if not flag:
             break
         key_pressed = cv2.waitKey(60)
@@ -131,14 +126,12 @@ def infer_on_stream(args):
        
        # Display the resulting frame
         cv2.imshow('Visualization', cv2.resize(out_frame,(600,400)))
-
+       
     # Release the capture
-    cap.release()
-    
+    feed.close()
     # Destroy any OpenCV windows
     cv2.destroyAllWindows
  
-
 def main():
     """
     Load the network and parse the output.
