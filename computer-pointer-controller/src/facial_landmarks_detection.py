@@ -2,6 +2,7 @@
 import os
 import cv2
 from openvino.inference_engine import IECore
+from util_function import  preprocess_input
 
 class Model_facial_landmarks_detection:
     '''
@@ -43,7 +44,7 @@ class Model_facial_landmarks_detection:
         Run predictions on the input image.
         '''
         ### Pre-process the image ###
-        p_frame = self.preprocess_input(face)
+        p_frame = preprocess_input(face, self.input_shape)
         
         ### Start an asynchronous request ###
         self.exec_network.start_async(request_id=0, inputs={self.input_name: p_frame})
@@ -57,16 +58,6 @@ class Model_facial_landmarks_detection:
             image, left_eye, right_eye, eyes_center = self.preprocess_output(outputs, face_coords, image, display)
         
         return image, left_eye, right_eye, eyes_center       
-
-    def preprocess_input(self, image):
-        '''
-        Preprocess the data before feeding it into the model for inference.
-        '''
-        p_frame = cv2.resize(image, (self.input_shape[3], self.input_shape[2]))
-        p_frame = p_frame.transpose((2,0,1))
-        p_frame = p_frame.reshape(1, *p_frame.shape)
-        
-        return p_frame
         
     def preprocess_output(self, outputs, face_coords, image, display):
         '''

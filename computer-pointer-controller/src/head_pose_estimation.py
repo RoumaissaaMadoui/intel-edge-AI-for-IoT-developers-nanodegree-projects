@@ -3,6 +3,7 @@ import os
 import cv2
 from math import cos, sin, pi
 from openvino.inference_engine import IECore
+from util_function import  preprocess_input
 
 class Model_head_pose_estimation:
     '''
@@ -44,7 +45,7 @@ class Model_head_pose_estimation:
         Run predictions on the input image.
         '''
         # Pre-process the image 
-        p_frame = self.preprocess_input(face)
+        p_frame = preprocess_input(face, self.input_shape)
         
         # Start an asynchronous request 
         self.exec_network.start_async(request_id=0, inputs={self.input_name: p_frame})
@@ -59,16 +60,6 @@ class Model_head_pose_estimation:
             out_image,  head_pose_angles  = self.preprocess_output(image, outputs, face_coords, display)
             
         return out_image,  head_pose_angles 
-
-    def preprocess_input(self, image):
-        '''
-        Preprocess the data before feeding it into the model for inference.
-        '''
-        p_frame = cv2.resize(image, (self.input_shape[3], self.input_shape[2]))
-        p_frame = p_frame.transpose((2,0,1))
-        p_frame = p_frame.reshape(1, *p_frame.shape)
-        
-        return p_frame
         
     def draw_outputs(self, image, head_pose_angles ,face_coords): 
         '''

@@ -2,6 +2,7 @@
 import os
 import cv2
 from openvino.inference_engine import IECore
+from util_function import  preprocess_input
 
 class Model_face_detection:
     '''
@@ -44,7 +45,7 @@ class Model_face_detection:
         Run predictions on the input image.
         '''        
         # Pre-process the image
-        p_frame = self.preprocess_input(image)
+        p_frame = preprocess_input(image, self.input_shape)
         
         # Start an asynchronous request
         self.exec_network.start_async(request_id=0, inputs={self.input_name: p_frame})
@@ -59,17 +60,6 @@ class Model_face_detection:
             out_image, face, face_coords = self.preprocess_output(image, outputs, threshold, display)
              
         return out_image, face, face_coords
-
-    def preprocess_input(self, image):
-        '''
-        Preprocess the data before feeding it into the model for inference.
-        '''
-        p_frame = cv2.resize(image, (self.input_shape[3], self.input_shape[2]))
-        p_frame = p_frame.transpose((2,0,1))
-        p_frame = p_frame.reshape(1, *p_frame.shape)
-        
-        return p_frame
-         
 
     def preprocess_output(self, image, outputs, threshold, display):
         '''

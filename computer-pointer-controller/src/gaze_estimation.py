@@ -3,6 +3,7 @@ import os
 import cv2
 import math
 from openvino.inference_engine import IECore
+from util_function import  preprocess_input
 
 class Model_gaze_estimation:
     '''
@@ -39,14 +40,13 @@ class Model_gaze_estimation:
         # Return the loaded inference plugin
         return self.exec_network
 
-    #def predict(self, image, left_eye, right_eye, head_pose_angles, display):
     def predict(self, image, left_eye, right_eye, eyes_center, head_pose_angles, display):
         '''
         Run predictions on the input image.
         '''
         # Pre-process the images
-        p_left_eye = self.preprocess_input(left_eye)
-        p_right_eye = self.preprocess_input(right_eye)
+        p_left_eye = preprocess_input(left_eye, self.input_shape)
+        p_right_eye = preprocess_input(right_eye, self.input_shape)
         
         # Start an asynchronous request #
         self.exec_network.start_async(request_id=0, inputs={'left_eye_image': p_left_eye,
@@ -63,16 +63,6 @@ class Model_gaze_estimation:
             out_image, gaze_vector = self.preprocess_output(image, outputs, eyes_center, display)
                     
         return out_image, gaze_vector
-
-    def preprocess_input(self, image):
-        '''
-        Preprocess the data before feeding it into the model for inference.
-        '''
-        p_frame = cv2.resize(image, (self.input_shape[3], self.input_shape[2]))
-        p_frame = p_frame.transpose((2,0,1))
-        p_frame = p_frame.reshape(1, *p_frame.shape)
-        
-        return p_frame
 
     def preprocess_output(self, image, outputs, eyes_center, display):
         '''
