@@ -1,27 +1,117 @@
 # Computer Pointer Controller
 
-*TODO:* Write a short introduction to your project
+| Details            |              |
+|-----------------------|---------------|
+| System | Ubuntu 18.04|
+| OpenVINO™ Toolkit | 2020.3|
+| Processor | Intel(R) Core(TM) i5-4200U |
+
+In this project, you will use a gaze detection model to control the mouse pointer of your computer. You will be using the [Gaze Estimation](https://docs.openvinotoolkit.org/latest/_models_intel_gaze_estimation_adas_0002_description_gaze_estimation_adas_0002.html) model to estimate the gaze of the user's eyes and change the mouse pointer position accordingly.
 
 ## Project Set Up and Installation
-*TODO:* Explain the setup procedures to run your project. For instance, this can include your project directory structure, the models you need to download and where to place them etc. Also include details about how to install the dependencies your project requires.
+
+- Install [OpenVINO™ Toolkit](https://docs.openvinotoolkit.org/latest/index.html)
+
+- Set the Environment Variables
+  ```
+  source /opt/intel/openvino/bin/setupvars.sh
+  ```
+- Install the `virtualenv` package
+  ```
+  pip install virtualenv
+  ```
+- Create a virtual environment `computer-pointer-controller`
+  ```
+  virtualenv computer-pointer-controller
+  ```
+- Activate the virtual environment
+  ```
+  source computer-pointer-controller/bin/activate 
+  ```
+- Get inside the project folder
+  ```
+  cd `computer-pointer-controller`
+  ```
+- Install requirements
+  ```
+  pip install -r requirements.txt 
+  ```
+- Create a folder for the models
+  ```
+  mkdir models
+  ```
+- Get inside the models folder
+  ```
+  cd models
+  ```
+- Downlod the models
+  - Download [face detection model](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html)
+    ```
+    sudo /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name face-detection-adas-binary-0001
+    ```
+  - Download [head_pose_estimation model](https://docs.openvinotoolkit.org/latest/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html)
+    ```
+    sudo /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name head-pose-estimation-adas-0001
+    ```
+  - Download [facial landmarks detection model](https://docs.openvinotoolkit.org/latest/_models_intel_landmarks_regression_retail_0009_description_landmarks_regression_retail_0009.html)
+    ```
+    sudo /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name landmarks-regression-retail-0009
+    ```
+  - Download [gaze estimation model](https://docs.openvinotoolkit.org/latest/_models_intel_gaze_estimation_adas_0002_description_gaze_estimation_adas_0002.html)
+    ```
+    sudo /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name gaze-estimation-adas-0002
+    ```
+- Deactivate the virtual environment
+  ```
+  deactivate
+  ```
+- Project directory structure
+
+  ![directory_structure](./images/directory_structure.png)
 
 ## Demo
-*TODO:* Explain how to run a basic demo of your model.
+
+[![](http://img.youtube.com/vi/Riu-3dcpIOg/0.jpg)](http://www.youtube.com/watch?v=Riu-3dcpIOg "")
+
+To run a basic demo of the app, run the following commands:
+
+- Activate the virtual environment
+  ```
+  source computer-pointer-controller/bin/activate 
+  ```
+- Get inside the project folder
+  ```
+  cd computer-pointer-controller 
+  ```
+- Set the Environment Variables
+  ```
+  source /opt/intel/openvino/bin/setupvars.sh 
+  ```
+- Run the app
+  ```
+  python src/main.py  \
+  -fd models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml  \
+  -hp models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml \
+  -fl models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml \
+  -ge models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml \
+  -i bin/demo.mp4
+  ```
 
 ## Documentation
-*TODO:* Include any documentation that users might need to better understand your project code. For instance, this is a good place to explain the command line arguments that your project supports.
+![command_line_arguments](./images/command_line_arguments.png)
 
 ## Benchmarks
-*TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.
+
+Device = CPU
+
+I didn't move the mouse
+
+|            | FP32 | FP16 | INT8 |
+|----------------|-------|-------|--------|
+|Total model loads time (s) | 0.48 | 0.52 | 0.77 |
+| Total inference time (s) | 12.00 | 11.82 | 11.78 |
 
 ## Results
-*TODO:* Discuss the benchmark results and explain why you are getting the results you are getting. For instance, explain why there is difference in inference time for FP32, FP16 and INT8 models.
 
-## Stand Out Suggestions
-This is where you can provide information about the stand out suggestions that you have attempted.
-
-### Async Inference
-If you have used Async Inference in your code, benchmark the results and explain its effects on power and performance of your project.
-
-### Edge Cases
-There will be certain situations that will break your inference flow. For instance, lighting changes or multiple people in the frame. Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust.
+- Lower precision model give lower accuracy. 
+- When using lower inference models the inference becomes faster.
