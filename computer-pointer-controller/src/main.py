@@ -1,6 +1,7 @@
 
 import sys
 import cv2
+import time
 import logging as log
 
 from argparse import ArgumentParser
@@ -91,12 +92,16 @@ def infer_on_stream(args):
     
     MC = MouseController(args.mouse_precision, args.mouse_speed)
     
+    start_load = time.time()
+    
     # Load the models 
     face_detection_network.load_model()
     head_pose_network.load_model()
     facial_landmarks_network.load_model()
     gaze_estimation_network.load_model()
-
+    
+    end_load = time.time() -  start_load 
+    
     # Handle the input stream
     input_type = handle_input_type(args.input)
     
@@ -105,6 +110,8 @@ def infer_on_stream(args):
     
     # Load the video capture
     feed.load_data()
+    
+    start_inf = time.time()
     
     # Read from the video capture 
     for flag, frame in feed.next_batch():
@@ -132,7 +139,11 @@ def infer_on_stream(args):
        
        # Display the resulting frame
         cv2.imshow('Visualization', cv2.resize(out_frame,(600,400)))
-       
+     
+    end_inf = time.time() - start_inf
+    
+    print("Total loading time: {}\nTotal inference time: {} ".format(end_load, end_inf))
+    
     # Release the capture
     feed.close()
     # Destroy any OpenCV windows
